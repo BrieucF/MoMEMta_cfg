@@ -29,7 +29,7 @@ cuba = {
     relative_accuracy = 0.01,
     verbosity = 3,
     max_eval = 500000,
-    n_start = 25000,
+    n_start = 15000,
 }
 
 -- NB: to be defined in the .cc is matrix_element_prefix
