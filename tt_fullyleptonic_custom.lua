@@ -27,10 +27,10 @@ end
 -- NB : all the point that have been launched are used to compute the intergal
 cuba = {
     algorithm = "vegas",
-    relative_accuracy = 0.05,
+    relative_accuracy = 0.01,
     verbosity = 3,
-    max_eval = 2000000,
-    n_start = 50000,
+    max_eval = 300000,
+    n_start = 15000,
 }
 
 -- NB: to be defined in the .cc is matrix_element_prefix
@@ -89,8 +89,8 @@ if USE_PERM then
   inputs = {
     inputs_before_perm[1],
     inputs_before_perm[2],
-    'permutator::output/2',
     'permutator::output/1',
+    'permutator::output/2',
   }
 else
   -- No permutation, take particles as they come
@@ -162,7 +162,7 @@ StandardPhaseSpace.phaseSpaceOut = {
 -- Declare module before the permutator to test read-access in the pool
 -- for non-existant values.
 BlockD.blockd = {
-    inputs = {inputs[1], inputs[3], inputs[2], inputs[4]}, -- Assumes the following order lepton-, b, lepton+, b NB : b and bbar are un disentangable
+    inputs = {inputs[1], inputs[3], inputs[2], inputs[4]}, -- Assumes the following order lepton- bbar, lepton+, b  NB: leptons and b being (anti)particle or not is defined by the order given in the matrix element below
 
     pT_is_met = true,
     met = 'input::met',
@@ -235,13 +235,13 @@ Looper.looper = {
           },
 
           {
-            pdg_id = 5,
-            me_index = 5,
+            pdg_id = -5,
+            me_index = 6,
           },
 
           {
-            pdg_id = -5,
-            me_index = 6,
+            pdg_id = 5,
+            me_index = 5,
           },
 
           {
