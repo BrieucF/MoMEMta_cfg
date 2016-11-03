@@ -35,7 +35,7 @@ cuba = {
 -- NB: to be defined in the .cc is matrix_element_prefix
 
 USE_TF = true
-USE_PERM = false -- carefull if you use TF binned in eta and the permutations, jet1 tf is applied to jet2
+USE_PERM = true -- carefull if you use TF binned in eta and the permutations, jet1 tf is applied to jet2
 
 baseDirME = "/home/fynu/bfrancois/scratch/MoMEMta/plugin_mode/"
 baseDirTF = "/home/fynu/bfrancois/scratch/framework/MIS_prod_data/CMSSW_7_6_5/src/cp3_llbb/HHTools/histFactory_hh/"

@@ -37,6 +37,8 @@ int main(int argc, char** argv) {
 
     ParameterSet lua_parameters;
     lua_parameters.set("matrix_element_prefix", "pp_to_tt_to_lvlvbb");
+    lua_parameters.set("lep1_me_index", 1);
+    lua_parameters.set("lep2_me_index", 3);
 
     ConfigurationReader configuration("tt_fullyleptonic_custom.lua", lua_parameters);
 

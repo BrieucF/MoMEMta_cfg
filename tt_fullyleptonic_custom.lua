@@ -33,7 +33,7 @@ cuba = {
     n_start = 15000,
 }
 
--- NB: to be defined in the .cc is matrix_element_prefix
+-- NB: to be defined in the .cc is matrix_element_prefix and lep1_me_index
 
 USE_TF = true
 USE_PERM = true -- carefull if you use TF binned in eta and the permutations, jet1 tf is applied to jet2
@@ -49,10 +49,10 @@ parameters = {
     W_width = 2.047600,
     Z_mass = 91.1876,
     Z_width = 2.49,
-    lep1_me_index = 1,
+    --lep1_me_index = 1,
     lep1TFFile = TFFile,
     lep1TFName = "ERecMinEGenVSEGen_el_matchedToAfterFSR_allEta_Norm_hh_llmetjj_HWWleptons_nobtag_csv", -- Lep1, 1 meaning the first one given to computeWeight!
-    lep2_me_index = 3,
+    --lep2_me_index = 3,
     lep2TFFile = TFFile,
     lep2TFName = "ERecMinEGenVSEGen_el_matchedToAfterFSR_allEta_Norm_hh_llmetjj_HWWleptons_nobtag_csv",
     jet1TFFile = TFFile,
@@ -183,6 +183,75 @@ if USE_PERM then
     }
 end
 
+if lep1_me_index == 1 then
+    print("Hello")
+    ids = {
+      {
+        pdg_id = 11,
+        me_index = lep1_me_index,
+      },
+
+      {
+        pdg_id = -11,
+        me_index = lep2_me_index,
+      },
+
+      {
+        pdg_id = -5,
+        me_index = 6,
+      },
+
+      {
+        pdg_id = 5,
+        me_index = 5,
+      },
+
+      {
+        pdg_id = -12,
+        me_index = 2,
+      },
+
+      {
+        pdg_id = 12,
+        me_index = 4,
+      }
+    }
+else
+    print("notHell")
+    ids = {
+      {
+        pdg_id = -11,
+        me_index = lep1_me_index,
+      },
+
+      {
+        pdg_id = 11,
+        me_index = lep2_me_index,
+      },
+
+      {
+        pdg_id = 5,
+        me_index = 5,
+      },
+
+      {
+        pdg_id = -5,
+        me_index = 6,
+      },
+
+      {
+        pdg_id = 12,
+        me_index = 4,
+      },
+
+      {
+        pdg_id = -12,
+        me_index = 2,
+      }
+    }
+end
+
+
 -- Loop over block solutions
 
 Looper.looper = {
@@ -223,37 +292,38 @@ Looper.looper = {
 
       particles = { -- NB negatively charged lepton must be the first particle given in the .cc, me_index = 1 --> first output of blockD will be the antineutrino . positively charge --> me_index =  3
         inputs = full_inputs,
-        ids = {
-          {
-            pdg_id = 11,
-            me_index = parameter("lep1_me_index"),
-          },
+        ids = ids, 
+        --{ 
+        --  {
+        --    pdg_id = 11,
+        --    me_index = parameter("lep1_me_index"),
+        --  },
 
-          {
-            pdg_id = -11,
-            me_index = parameter("lep2_me_index"),
-          },
+        --  {
+        --    pdg_id = -11,
+        --    me_index = parameter("lep2_me_index"),
+        --  },
 
-          {
-            pdg_id = -5,
-            me_index = 6,
-          },
+        --  {
+        --    pdg_id = -5,
+        --    me_index = 6,
+        --  },
 
-          {
-            pdg_id = 5,
-            me_index = 5,
-          },
+        --  {
+        --    pdg_id = 5,
+        --    me_index = 5,
+        --  },
 
-          {
-            pdg_id = -12,
-            me_index = 2,
-          },
+        --  {
+        --    pdg_id = -12,
+        --    me_index = 2,
+        --  },
 
-          {
-            pdg_id = 12,
-            me_index = 4,
-          }
-        }
+        --  {
+        --    pdg_id = 12,
+        --    me_index = 4,
+        --  }
+        --}
       },
 
       jacobians = jacobians
