@@ -36,28 +36,27 @@ int main(int argc, char** argv) {
     logging::set_level(logging::level::debug);
 
     ParameterSet lua_parameters;
-    lua_parameters.set("matrix_element_prefix", "pp_to_tt_to_lvlvbb");
-    //lua_parameters.set("lep1_me_index", 1);
-    //lua_parameters.set("lep2_me_index", 3);
+    lua_parameters.set("matrix_element_prefix", "pp_twMinusbbar_tAndWOnshell");
 
-    ConfigurationReader configuration("tt_fullyleptonic_custom.lua", lua_parameters);
+    ConfigurationReader configuration("twMinusbbar.lua", lua_parameters);
 
     // Change top mass
     configuration.getGlobalParameters().set("top_mass", 173.);
 
     MoMEMta weight(configuration.freeze());
     // Electron
-    Particle electron { "pos_lepton", LorentzVector(16.171895980835, -13.7919054031372, -3.42997527122497, 21.5293197631836), -11 };
+    Particle electron { "neg_lepton", LorentzVector(16.171895980835, -13.7919054031372, -3.42997527122497, 21.5293197631836), -11 };
     // b-quark
     Particle b1 { "bjet1", LorentzVector(-55.7908325195313, -111.59294128418, -122.144721984863, 174.66259765625), 5 };
     // Muon
-    Particle muon { "neg_lepton", LorentzVector(-18.9018573760986, 10.0896110534668, -0.602926552295686, 21.4346446990967), +13 };
+    Particle muon { "pos_lepton", LorentzVector(-18.9018573760986, 10.0896110534668, -0.602926552295686, 21.4346446990967), +13 };
     // Anti b-quark
     Particle b2 { "bjet2", LorentzVector(71.3899612426758, 96.0094833374023, -77.2513122558594, 142.492813110352), -5 };
     Particle met { "met", LorentzVector(71.3899612426758-18.9018573760986-55.7908325195313+16.171895980835, 96.0094833374023+10.0896110534668-111.59294128418 -13.7919054031372, -77.2513122558594-0.602926552295686-122.144721984863-3.42997527122497, 142.492813110352+21.4346446990967+174.66259765625+21.5293197631836), 0 };
+    Particle dummy_neutrino { "dummy_neutrino", LorentzVector(1,0,0,1), 0 };
 
     auto start_time = system_clock::now();
-    std::vector<std::pair<double, double>> weights = weight.computeWeights({muon, electron, b1, b2}, LorentzVector(71.3899612426758-18.9018573760986-55.7908325195313+16.171895980835, 96.0094833374023+10.0896110534668-111.59294128418 -13.7919054031372, -77.2513122558594-0.602926552295686-122.144721984863-3.42997527122497, 142.492813110352+21.4346446990967+174.66259765625+21.5293197631836));//, -(p3 + p5 + p4 + p6));
+    std::vector<std::pair<double, double>> weights = weight.computeWeights({muon, electron, b1, b2, dummy_neutrino}, LorentzVector(71.3899612426758-18.9018573760986-55.7908325195313+16.171895980835, 96.0094833374023+10.0896110534668-111.59294128418 -13.7919054031372, -77.2513122558594-0.602926552295686-122.144721984863-3.42997527122497, 142.492813110352+21.4346446990967+174.66259765625+21.5293197631836));//, -(p3 + p5 + p4 + p6));
     auto end_time = system_clock::now();
 
     LOG(debug) << "Result:";

@@ -15,10 +15,6 @@ function copy_and_append(t1, t2)
     return t3
 end
 
--- Order convention : e+ e- b bbar
--- Reco particles : input::particles/1
--- Gen particles, depends on what you do
-
 -- Available parameters : https://github.com/MoMEMta/MoMEMta/blob/master/core/src/MoMEMta.cc#L141
 -- If "relative accuracy" is reached stop launching points unless "min_eval" point have been launched,
 -- if after "max_eval" points have been launched stop launching even if we do not have reahced accuracy.
@@ -55,7 +51,10 @@ parameters = {
     W_mass = 80.419002,
     W_width = 2.047600,
     Z_mass = 91.1876,
+    ZZ_mass = 182.3752,
     Z_width = 2.49,
+    higgs_width = 0.100,
+    ZH_mass = 216.18,
     lep1_me_index = 1,
     lep1TFFile = TFFile,
     lep1TFName = "ERecMinEGenVSEGen_el_matchedToAfterFSR_allEta_Norm_hh_llmetjj_HWWleptons_nobtag_csv",
@@ -66,7 +65,7 @@ parameters = {
     jet1TFName = "ERecMinEGenVSEGen_bjet_matchedToAfterFSR_allEta_Norm_hh_llmetjj_HWWleptons_nobtag_csv",
     jet2TFFile = TFFile,
     jet2TFName = "ERecMinEGenVSEGen_bjet_matchedToAfterFSR_allEta_Norm_hh_llmetjj_HWWleptons_nobtag_csv",
-    matrix_element = matrix_element_prefix .. "_sm_P1_Sigma_sm_gg_epembbx", --"pp_to_Z_to_llbb_sm_P1_Sigma_sm_gg_epembbx", 'pp_to_llbb_sm_P1_Sigma_sm_gg_epembbx', 'gg_to_z_to_llbb_sm_P1_Sigma_sm_gg_epembbx', 'gg_to_z_to_llbb_sm_P1_Sigma_sm_gg_mupmumbbx',
+    matrix_element = matrix_element_prefix .. "_sm_P1_Sigma_sm_uux_mupmumbbx", --"pp_to_Z_to_llbb_sm_P1_Sigma_sm_gg_epembbx", 'pp_to_llbb_sm_P1_Sigma_sm_gg_epembbx', 'gg_to_z_to_llbb_sm_P1_Sigma_sm_gg_epembbx', 'gg_to_z_to_llbb_sm_P1_Sigma_sm_gg_mupmumbbx',
     matrix_element_parameters = baseDirME .. "/" .. matrix_element_prefix .. "/Cards/param_card.dat",
 }
 matrix_element_lib = baseDirME .. "/" .. matrix_element_prefix .. "/build/libme_" .. matrix_element_prefix .. ".so"
@@ -85,6 +84,7 @@ if USE_TF then
         reco_particle = neg_lepton.reco_p4,
         file = parameter('lep1TFFile'),
         th2_name = parameter('lep1TFName'),
+        --min_E = 5.,
     }
     neg_lepton.set_gen_p4("tf_neg_lepton::output")
 
@@ -108,7 +108,7 @@ if USE_TF then
     }
     Looper.looper = {
         solutions = "blocka::solutions",
-        path = Path("tfEval_bjet1", "tfEval_bjet2", "boost", "dy", "integrand") -- everything that will depend on the different solutions
+        path = Path("tfEval_bjet1", "tfEval_bjet2", "boost", "zh", "integrand") -- everything that will depend on the different solutions
     }
     bjet1.set_gen_p4("looper::particles/1")
     bjet2.set_gen_p4("looper::particles/2")
@@ -160,9 +160,9 @@ if USE_TF then
     append(jacobians, {'tf_neg_lepton::TF_times_jacobian', 'looper::jacobian', 'tf_pos_lepton::TF_times_jacobian', 'tfEval_bjet1::TF', 'tfEval_bjet2::TF'})
 end
 
-MatrixElement.dy = {
+MatrixElement.zh = {
   pdf = 'CT10nlo',
-  pdf_scale = parameter('Z_mass'),
+  pdf_scale = parameter('ZH_mass'),
 
   matrix_element = parameter('matrix_element'),
   matrix_element_parameters = {
@@ -171,6 +171,7 @@ MatrixElement.dy = {
 
   override_parameters = {
       mdl_MT = parameter('top_mass'),
+      mdl_WH = parameter('higgs_width')
   },
 
   initialState = 'boost::partons',
@@ -179,12 +180,12 @@ MatrixElement.dy = {
     inputs = genParticles,
     ids = {
       {
-        pdg_id =  -11,
+        pdg_id =  -13,
         me_index = 1,
       },
 
       {
-        pdg_id = 11,
+        pdg_id = 13,
         me_index = 2,
       },
 
@@ -204,7 +205,7 @@ MatrixElement.dy = {
 }
 
 DoubleLooperSummer.integrand = {
-    input = "dy::output"
+    input = "zh::output"
 }
 
 integrand("integrand::sum")
