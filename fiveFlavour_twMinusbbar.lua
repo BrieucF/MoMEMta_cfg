@@ -37,7 +37,7 @@ parameters = {
     jet1TFName = "ERecMinEGenVSEGen_bjet_matchedToAfterFSR_allEta_Norm_hh_llmetjj_HWWleptons_nobtag_csv",
     jet2TFFile = TFFile,
     jet2TFName = "ERecMinEGenVSEGen_bjet_matchedToAfterFSR_allEta_Norm_hh_llmetjj_HWWleptons_nobtag_csv",
-    matrix_element = matrix_element_prefix .. "_sm_P1_Sigma_sm_gg_mupvmbmumvmxbx",
+    matrix_element = matrix_element_prefix .. "_sm_no_b_mass_P1_Sigma_sm_no_b_mass_gb_mupvmbemvex",
     matrix_element_parameters = baseDirME .. "/" .. matrix_element_prefix .. "/Cards/param_card.dat",
 }
 matrix_element_lib = baseDirME .. "/" .. matrix_element_prefix .. "/build/libme_" .. matrix_element_prefix .. ".so"
@@ -48,6 +48,7 @@ local neg_lepton = declare_input("neg_lepton")
 local pos_lepton = declare_input("pos_lepton")
 local bjet1 = declare_input("bjet1")
 local bjet2 = declare_input("bjet2")
+--local isr = declare_input("isr")
 local dummy_neutrino = declare_input("dummy_neutrino")
 
 if USE_PERM then
@@ -119,35 +120,22 @@ if USE_TF then
     }
     bjet1.set_gen_p4("tf_bjet1::output")
 
-    BinnedTransferFunctionOnEnergy.tf_bjet2 = {
-        ps_point = add_dimension(),
-        reco_particle = bjet2.reco_p4,
-        file = parameter('jet2TFFile'),
-        th2_name = parameter('jet2TFName'),
-        --min_E = 10.,
-    }
-    bjet2.set_gen_p4("tf_bjet2::output")
+    --BinnedTransferFunctionOnEnergy.tf_bjet2 = {
+    --    ps_point = add_dimension(),
+    --    reco_particle = bjet2.reco_p4,
+    --    file = parameter('jet2TFFile'),
+    --    th2_name = parameter('jet2TFName'),
+    --    --min_E = 10.,
+    --}
+    --bjet2.set_gen_p4("tf_bjet2::output")
 end
---P4Printer.printbjet1reco = {
---    input = bjet2.reco_p4,
---}
---P4Printer.printbjet1rgen = {
---    input = "tf_bjet2::output",
---}
 -- Fix the neutrino phi angle
 FlatTransferFunctionOnPhi.neutrino_phi_fixed = {
     ps_point = add_dimension(),
     reco_particle = dummy_neutrino.reco_p4, -- only used to obtain the mass of the particle, here we want it to stay at zero, dummy neutrino is defined in the .cc as such
 }
---P4Printer.printNeutrinoPhiFixed = {
---    input = 'neutrino_phi_fixed::output',
---}
---P4Printer.printNeutrino = {
---    input = dummy_neutrino.reco_p4,
---}
-
 -- Fix the neutrino momemtum using W and top mass as well as the known bjet and positive lepton 
--- NB : the given bjet is now assumed to be the partciel b (not anti-particle) since : t > W+ b, W+ > l+ nu)
+-- NB : the given bjet is now assumed to be the particle b (not anti-particle) since : t > W+ b, W+ > l+ nu)
 SecondaryBlockB.sb_b = {
     p1 = 'neutrino_phi_fixed::output',
     p2 = pos_lepton.gen_p4,
@@ -155,32 +143,24 @@ SecondaryBlockB.sb_b = {
     s12 = 'flatter_s12::s',
     s123 = 'flatter_s123::s',
 }
+
 Looper.looper_sb_b = {
     solutions = "sb_b::solutions",
     path = Path("met_substracted", "blockb", "looper_blockb")
---    path = Path("met_substracted", "blockb", "looper_blockb", "printNeutrinoTosubtract", "printmetAfter")
 }
---P4Printer.printmetBefore = {
---    input = 'met::p4'
---}
---P4Printer.printNeutrinoTosubtract = {
---    input = 'looper_sb_b::particles/1'
---}
 VectorLinearCombinator.met_substracted = {
     inputs = {'met::p4', 'looper_sb_b::particles/1'},
-    coeficients = {1., -1.}
+    coefficients = {1., -1.}
 }
---P4Printer.printmetAfter = {
---    input = 'met_substracted::output'
---}
-
 -- Fix the anti-neutrino momentum using W mass as well as all previously obtained particles 
 BlockB.blockb = {
-    inputs = {neg_lepton.gen_p4, bjet1.gen_p4, pos_lepton.gen_p4, bjet2.gen_p4, 'looper_sb_b::particles/1'}, -- A priori, no need to pass him the other particles for the pt tot balance since instead we impose PT neutrino == (MET-firstNeutrino) 
-                                    -- But still we can do it so that the check whether the found solution is physycal or not take the energy of other particles into account
+    --inputs = {neg_lepton.gen_p4, bjet1.gen_p4, pos_lepton.gen_p4, bjet2.gen_p4, 'looper_sb_b::particles/1'}, -- A priori, no need to pass him the other particles for the pt tot balance since instead we impose PT neutrino == (MET-firstNeutrino) 
+    --inputs = {neg_lepton.gen_p4, bjet1.gen_p4, pos_lepton.gen_p4, 'looper_sb_b::particles/1'}, -- A priori, no need to pass him the other particles for the pt tot balance since instead we impose PT neutrino == (MET-firstNeutrino) 
+    inputs = {neg_lepton.gen_p4},
+                     -- But still we can do it so that the check whether the found solution is physycal or not take the energy of other particles into account
                      -- The first output of BlockB will be the anti-neutrino associated to neg_lepton
                      -- (W- > l- nu~), to be propagated in the ME below
-    pT_is_met = true, -- Name is a bit misleading, we should understand neutrinoPt_is_met
+    pT_is_met = true,-- Name is a bit misleading, we should understand neutrinoPt_is_met
     met = 'met_substracted::output',
     s12 = 'flatter_s45::s',
 }
@@ -191,10 +171,13 @@ Looper.looper_blockb = {
 }
 
 StandardPhaseSpace.phaseSpaceOut = {
-    particles = {neg_lepton.gen_p4, bjet1.gen_p4, pos_lepton.gen_p4, bjet2.gen_p4} -- only on visible particles. SB_B trade one neutrinos dof, BlockB trades the other neutrino dof
+    particles = {neg_lepton.gen_p4, bjet1.gen_p4, pos_lepton.gen_p4} -- only on visible particles. SB_B trade one neutrinos dof, BlockB trades the other neutrino dof
 }
--- full inputs order is (l-, b, l+, b~, neutrino, anti-neutrino) as fixed by passing the positive lepton to the SB_B
-full_inputs = {neg_lepton.gen_p4, bjet1.gen_p4, pos_lepton.gen_p4, bjet2.gen_p4, 'looper_sb_b::particles/1', 'looper_blockb::particles/1'}
+--DoublePrinter.printPhaseSpace = {
+--    input = 'phaseSpaceOut::phase_space'
+--}
+-- full inputs order is (l-, b, l+, neutrino, anti-neutrino) as fixed by passing the positive lepton to the SB_B
+full_inputs = {neg_lepton.gen_p4, bjet1.gen_p4, pos_lepton.gen_p4, 'looper_sb_b::particles/1', 'looper_blockb::particles/1'}
 
 BuildInitialState.boost = {
     do_transverse_boost = true,
@@ -203,8 +186,17 @@ BuildInitialState.boost = {
 
 jacobians = {'flatter_s12::jacobian', 'flatter_s123::jacobian', 'flatter_s45::jacobian', 'neutrino_phi_fixed::TF_times_jacobian', 'looper_blockb::jacobian', 'looper_sb_b::jacobian'}
 
+--DoublePrinter.printjacSecondaryBlockB = {
+--    input = 'looper_sb_b::jacobian'
+--}
+--DoublePrinter.printjacSBlockB = {
+--    input = 'looper_blockb::jacobian'
+--}
+
+
 if USE_TF then
-    append(jacobians, {'tf_neg_lepton::TF_times_jacobian', 'tf_pos_lepton::TF_times_jacobian', 'tf_bjet1::TF_times_jacobian', 'tf_bjet2::TF_times_jacobian'})
+    --append(jacobians, {'tf_neg_lepton::TF_times_jacobian', 'tf_pos_lepton::TF_times_jacobian', 'tf_bjet1::TF_times_jacobian', 'tf_bjet2::TF_times_jacobian'})
+    append(jacobians, {'tf_neg_lepton::TF_times_jacobian', 'tf_pos_lepton::TF_times_jacobian', 'tf_bjet1::TF_times_jacobian'})
 end
 
 append(jacobians, {'phaseSpaceOut::phase_space'})
@@ -227,7 +219,7 @@ MatrixElement.twMinus = {
   particles = { -- full_inputs = {neg_lepton.gen_p4, bjet1.gen_p4, pos_lepton.gen_p4, bjet2.gen_p4, 'looper_sb_b::particles/1', 'looper_blockb::particles/1'}
                 -- full inputs order is (l-, b, l+, b~, neutrino, anti-neutrino) as fixed by passing the positive lepton to the SB_B
                 --  t > W+ b, W+ > l+ nu (tbarwPlus lua will be  t~ > W- b~, W- > l- nu~)
-                --  in MG mapFinalStates[{-13, 14, 5, 13, -14, -5}]
+                --  in MG mapFinalStates[{-13, 14, 5, 13, -14}]
   inputs = full_inputs,
     ids = { 
       {
@@ -243,11 +235,6 @@ MatrixElement.twMinus = {
       {
         pdg_id = -13,
         me_index = 1,
-      },
-
-      {
-        pdg_id = -5,
-        me_index = 6,
       },
 
       {
