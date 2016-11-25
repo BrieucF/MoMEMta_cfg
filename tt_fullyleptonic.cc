@@ -40,7 +40,7 @@ int main(int argc, char** argv) {
     //lua_parameters.set("lep1_me_index", 1);
     //lua_parameters.set("lep2_me_index", 3);
 
-    ConfigurationReader configuration("tt_fullyleptonic_custom.lua", lua_parameters);
+    ConfigurationReader configuration("tt_fullyleptonic.lua", lua_parameters);
 
     // Change top mass
     configuration.getGlobalParameters().set("top_mass", 173.);

@@ -27,6 +27,7 @@
 #include <chrono>
 
 using namespace std::chrono;
+using namespace momemta;
 
 int main(int argc, char** argv) {
 

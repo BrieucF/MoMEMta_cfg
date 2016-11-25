@@ -27,6 +27,7 @@
 #include <chrono>
 
 using namespace std::chrono;
+using namespace momemta;
 
 int main(int argc, char** argv) {
 
@@ -55,6 +56,24 @@ int main(int argc, char** argv) {
     LorentzVector p5(-18.9018573760986, 10.0896110534668, -0.602926552295686, 21.4346446990967);
     // Anti b-quark
     LorentzVector p6(71.3899612426758, 96.0094833374023, -77.2513122558594, 142.492813110352);
+    Particle electron { "pos_lepton", LorentzVector(16.171895980835, -13.7919054031372, -3.42997527122497, 21.5293197631836), -11 };
+    // b-quark
+    Particle b1 { "bjet1", LorentzVector(-55.7908325195313, -111.59294128418, -122.144721984863, 174.66259765625), 5 };
+    // Muon
+    Particle muon { "neg_lepton", LorentzVector(-18.9018573760986, 10.0896110534668, -0.602926552295686, 21.4346446990967), +13 };
+    // Anti b-quark
+    Particle b2 { "bjet2", LorentzVector(71.3899612426758, 96.0094833374023, -77.2513122558594, 142.492813110352), -5 };
+    Particle met { "met", LorentzVector(71.3899612426758-18.9018573760986-55.7908325195313+16.171895980835, 96.0094833374023+10.0896110534668-111.59294128418 -13.7919054031372, -77.2513122558594-0.602926552295686-122.144721984863-3.42997527122497, 142.492813110352+21.4346446990967+174.66259765625+21.5293197631836), 0 };
+    LorentzVector isr_p4;
+    isr_p4 = -(p3+p4+p5+p6);
+    isr_p4.SetE(std::abs(isr_p4.E()));
+    Particle isr {"isr", isr_p4, 0};
+
+    auto start_time = system_clock::now();
+    //std::vector<std::pair<double, double>> weights = weight.computeWeights({p3, p4, p5, p6, -(p3+p4+p5+p6)});
+    // Particles, fifth being the pt to balance
+    std::vector<std::pair<double, double>> weights = weight.computeWeights({muon, electron, b1, b2, isr});
+    auto end_time = system_clock::now();
 //    LorentzVector p3(28.1583,-32.8119,-13.4703,44.6727);
 //    LorentzVector p4(-23.2368,21.8771,54.2188,63.2692);
 //    std::cout  << "Masssssssssssssssssss" << std::endl;
@@ -62,10 +81,6 @@ int main(int argc, char** argv) {
 //    LorentzVector p5(-76.9412,-138.709,8.87853,170.862);
 //    LorentzVector p6(-51.2887,-14.691,13.9445,54.9725);
 
-    auto start_time = system_clock::now();
-    //std::vector<std::pair<double, double>> weights = weight.computeWeights({p3, p4, p5, p6, -(p3+p4+p5+p6)});
-    std::vector<std::pair<double, double>> weights = weight.computeWeights({p3, p5, p4, p6, -(p3+p4+p5+p6)});
-    auto end_time = system_clock::now();
 
     LOG(debug) << "Result:";
     for (const auto& r: weights) {
