@@ -52,7 +52,7 @@ local neg_lepton = declare_input("neg_lepton")
 local pos_lepton = declare_input("pos_lepton")
 local bjet1 = declare_input("bjet1")
 local bjet2 = declare_input("bjet2")
---local isr = declare_input("isr")
+local isr = declare_input("isr") -- only declared not to have to change the input when computing several weightsin a go (dy needs isr)
 
 if USE_PERM then
   -- Use permutator module to permutate input particles 0 and 2 using the MC
@@ -151,9 +151,9 @@ end
 -- for non-existant values.
 inputs = { neg_lepton.gen_p4, bjet1.gen_p4, pos_lepton.gen_p4, bjet2.gen_p4 }
 BlockD.blockd = {
-    inputs = inputs, -- The first output of BlockD will be the neutrino associated to neg_lepton and bjet1
+    inputs = { neg_lepton.gen_p4, bjet1.gen_p4, pos_lepton.gen_p4, bjet2.gen_p4 }, -- The first output of BlockD will be the neutrino associated to neg_lepton and bjet1
                      -- ie the anti neutrino (t~ > W- b~, W- > l- nu~), to be propagated in the ME below
-    pT_is_met = true, -- Name is a bit misleading, we should u nderstand neutrinoPt_is_met
+    pT_is_met = true, -- Name is a bit misleading, we should understand neutrinoPt_is_met
 
     s13 = 'flatter_s13::s',
     s134 = 'flatter_s134::s',
